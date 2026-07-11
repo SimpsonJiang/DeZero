@@ -4,7 +4,7 @@ import numpy as np
 
 class Exp(Function):
     def forward(self, x):
-        return np.exp(x)
+        return Variable(np.exp(x.data))
 
 if __name__ == "__main__":
     exp = Exp()

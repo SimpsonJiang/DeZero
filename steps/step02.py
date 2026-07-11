@@ -1,18 +1,18 @@
 from step01 import Variable
 class Function:
-    def __call__(self, input):
-        assert isinstance(input, Variable), f"Input of Function must be Variable."
-        x = input.data
-        y = self.forward(x)
-        output = Variable(y)
+    def __call__(self, x):
+        assert isinstance(x, Variable), (
+            f"x of Function must be a instance of Variable, got {type(x).__name__}"
+        )
+        output = self.forward(x)
         return output
     
-    def forward(self, x):
+    def forward(self, x:Variable):
         raise NotImplementedError()
 
 class Square(Function):
     def forward(self, x):
-        return x ** 2
+        return Variable(x.data ** 2)
 
 if __name__ == "__main__":
     f = Square()
