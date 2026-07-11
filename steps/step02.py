@@ -14,7 +14,8 @@ class Square(Function):
     def forward(self, x):
         return x ** 2
 
-f = Square()
-x = Variable(2)
-y = f(x)
-print(y.data)
+if __name__ == "__main__":
+    f = Square()
+    x = Variable(3)
+    y = f(x)
+    print(y.data)
