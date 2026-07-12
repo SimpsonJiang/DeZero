@@ -29,6 +29,8 @@ if __name__ == "__main__":
     exp = Exp()
     class Comp(Function): # e^{x^2}
         def forward(self, x):
+            exp = Exp()
+            square = Square()
             return exp(square(x))
     comp = Comp()
 
