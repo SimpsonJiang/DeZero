@@ -17,6 +17,9 @@ class Variable:
     def set_creator(self, func):
         self.creator = func
     
+    def cleargrad(self):
+        self.grad = None
+
     def backward(self):
         if self.grad is None:
             self.grad = np.ones_like(self.data)
@@ -31,9 +34,9 @@ class Variable:
                 gxs = (gxs,) #单个变量不是iterable的
             for x, gx in zip(xs, gxs):
                 if x.grad is None:
-                    x.grad = gx
+                    x.grad = gx.copy()
                 else:
-                    x.grad += gx
+                    x.grad += gx.copy()
                 if x.creator is not None:
                     funcs.append(x.creator)
 
@@ -78,9 +81,15 @@ def add(x1, x2):
     return Add()(x1, x2)
 
 if __name__ == "__main__":
-    x1 = Variable(np.array(3))
+    x1 = Variable(np.array(4))
     x2 = Variable(np.array(5))
     ys = add(x1, x1)
+    ys.backward()
+    print(ys.data)
+    print(x1.grad)
+
+    x1.cleargrad()
+    ys = add(add(x1, x1), x1)
     ys.backward()
     print(ys.data)
     print(x1.grad)
