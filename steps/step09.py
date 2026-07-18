@@ -1,4 +1,5 @@
 import numpy as np
+
 class Variable:
     def __init__(self, data):
         if data is not None:
@@ -39,32 +40,36 @@ class Function:
     def backward(self, gy):
         raise NotImplementedError()
 
+class Square(Function):
+    def forward(self, x):
+        return Variable(as_array(x.data ** 2))
+    
+    def backward(self, gy):
+        self.x.grad = gy * 2 * self.x.data
+        return self.x.grad
+    
+class Exp(Function):
+    def forward(self, x):
+        return Variable(as_array(np.exp(x.data)))
+    
+    def backward(self, gy):
+        self.x.grad = gy * np.exp(self.x.data)
+        return self.x.grad
+
+def as_array(x):
+    if np.isscalar(x):
+        return np.array(x)
+    return x
+
+def square(x:Variable):
+    return Square()(x)
+
+def exp(x:Variable):
+    return Exp()(x)
+
 if __name__ == "__main__":
-    class Square(Function):
-        def forward(self, x):
-            return Variable(x.data ** 2)
-        
-        def backward(self, gy):
-            self.x.grad = gy * 2 * self.x.data
-            return self.x.grad
-    
-    class Exp(Function):
-        def forward(self, x):
-            return Variable(np.exp(x.data))
-        
-        def backward(self, gy):
-            self.x.grad = gy * np.exp(self.x.data)
-            return self.x.grad
-    
-    A = Square()
-    B = Exp()
-    C = Square()
+    x = Variable(np.array(0.5))
+    y = square(exp(square(x)))
 
-    x = Variable(np.array(0.8))
-    a = A(x)
-    b = B(a)
-    y = C(b)
-
-    y.grad = 1.0
     y.backward()
-    print(y.grad, b.grad, a.grad, x.grad)
+    print(x.grad)
