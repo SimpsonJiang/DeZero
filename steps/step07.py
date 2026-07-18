@@ -10,12 +10,15 @@ class Variable:
         self.creator = func
     
     def backward(self):
-        if self.creator is not None:
-            self.creator.x.grad = self.creator.backward(self.grad)
-            self.creator.x.backward()
+        funcs = [self.creator]
+        while funcs:
+            f = funcs.pop()
+            f.x.grad = f.backward(f.y.grad)
+            if f.x.creator is not None:
+                funcs.append(f.x.creator)
 
 class Function:
-    def __call__(self, x):
+    def __call__(self, x) -> Variable:
         assert isinstance(x, Variable), (
             f"x of Function must be a instance of Variable, got {type(x).__name__}"
         )
@@ -46,6 +49,7 @@ if __name__ == "__main__":
         
         def backward(self, gy):
             self.x.grad = gy * np.exp(self.x.data)
+            return self.x.grad
     
     A = Square()
     B = Exp()
@@ -58,5 +62,4 @@ if __name__ == "__main__":
 
     y.grad = 1.0
     y.backward()
-
-    print(x.grad)
+    print(y.grad, b.grad, a.grad, x.grad)
