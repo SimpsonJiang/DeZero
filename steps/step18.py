@@ -2,14 +2,13 @@ import numpy as np
 import weakref
 import psutil
 import os
+from contextlib import contextmanager
 
-def as_array(x):
-    if np.isscalar(x):
-        return np.array(x)
-    return x
+class Config:
+    enable_backprop = True
 
 class Variable:
-    def __init__(self, data):
+    def __init__(self, data: np.ndarray):
         if data is not None:
             if not isinstance(data, np.ndarray):
                 raise TypeError('{} is not supported'.format(type(data)))
@@ -25,7 +24,7 @@ class Variable:
     def cleargrad(self):
         self.grad = None
 
-    def backward(self):
+    def backward(self, retain_grad = False):
         if self.grad is None:
             self.grad = np.ones_like(self.data)
 
@@ -35,13 +34,17 @@ class Variable:
             index = np.where(generations == generations.max())[0][-1]
             f = funcs.pop(index)
 
-            xs, ys = f.inputs, f.outputs
-            gys = [y().grad for y in ys]
+            gys = [y().grad for y in f.outputs]
+
+            if not retain_grad:
+                for y in f.outputs:
+                    y().grad = None # 由于y.grad以后不会再被用到，故释放其内存
+
             gxs = f.backward(*gys)
             if not isinstance(gxs, tuple):
                 gxs = (gxs,) #单个变量不是iterable的
             
-            for x, gx in zip(xs, gxs):
+            for x, gx in zip(f.inputs, gxs):
                 if x.grad is None:
                     x.grad = gx.copy()
                 else:
@@ -55,15 +58,15 @@ class Function:
         ys = self.forward(*xs)
         if not isinstance(ys, tuple):
             ys = (ys,)
-
-        self.generation = max([x.generation for x in inputs])
-
-        outputs = [Variable(as_array(y)) for y in ys]
-        for output in outputs:
-            output.set_creator(self)
         
-        self.inputs = inputs
-        self.outputs = [weakref.ref(output) for output in outputs]
+        outputs = [Variable(as_array(y)) for y in ys]
+
+        if Config.enable_backprop:
+            self.generation = max([x.generation for x in inputs])   
+            for output in outputs:
+                output.set_creator(self) 
+            self.inputs = inputs
+            self.outputs = [weakref.ref(output) for output in outputs]
 
         return outputs if len(outputs) > 1 else outputs[0]
     
@@ -88,6 +91,25 @@ class Add(Function):
     def backward(self, gy):
         return gy, gy
 
+def as_array(x):
+    if np.isscalar(x):
+        return np.array(x)
+    return x
+
+@contextmanager
+def using_config(name, value):
+    assert isinstance(name, str), print(f"Expected str, get {type(name)}.")
+    assert hasattr(Config, name), print(f"Config does not have attributre \"{name}\".")
+    old_value = getattr(Config, name)
+    setattr(Config, name, value)
+    try:
+        yield
+    finally:
+        setattr(Config, name, old_value)
+
+def no_grad():
+    return using_config("enable_backprop", False)
+
 def square(x):
     return Square()(x)
 
@@ -102,14 +124,14 @@ def main():
         y = square(square(square(x)))
         y.backward()
     
-    x.cleargrad()
-
-    for i in range(1000000):
-        x = Variable(np.array(200))
-        y = square(square(square(x)))
-        
+    with no_grad():
+        for i in range(1000000):
+            x = Variable(np.array(200))
+            y = square(square(square(x)))
+    
     after = process.memory_info().rss / 1024**2
     print(f"Before {before} MiB \n After {after} MiB \n Used {after - before} MiB")
 
 if __name__ == "__main__":
+
     main()

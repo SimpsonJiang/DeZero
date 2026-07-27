@@ -1,4 +1,6 @@
 import numpy as np
+import psutil
+import os
 
 def as_array(x):
     if np.isscalar(x):
@@ -91,8 +93,16 @@ def square(x):
 def add(x1, x2):
     return Add()(x1, x2)
 
+def main():
+    process = psutil.Process(os.getpid())
+    before = process.memory_info().rss / 1024**2
+    for i in range(10000):
+        x = Variable(np.array(100))
+        y = square(square(square(x)))
+        y.backward()
+    after = process.memory_info().rss / 1024**2
+    print(f"Before {before} MiB \n After {after} MiB \n Used {after - before} MiB")
+
+
 if __name__ == "__main__":
-    x = Variable(np.array(1))
-    y = add(square(square(x)), square(square(x)))
-    y.backward()
-    print(x.grad)
+    main()
