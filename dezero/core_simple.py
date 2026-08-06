@@ -1,6 +1,7 @@
 import numpy as np
 import weakref
 from contextlib import contextmanager
+from typing import Optional
 
 class Config:
     enable_backprop = True
@@ -8,7 +9,7 @@ class Config:
 class Variable:
     __array_priority__ = 1
     
-    def __init__(self, data: np.ndarray, name: str|None = None):
+    def __init__(self, data: np.ndarray, name: Optional[str] = None):
         if data is not None:
             if not isinstance(data, np.ndarray):
                 data = as_array(data)
