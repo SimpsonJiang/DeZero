@@ -8,13 +8,11 @@ import matplotlib.pyplot as plt
 def rosenbrock(x0, x1, a=1, b=100):
     return b * (x1 - x0 ** 2) ** 2 + (a - x0) ** 2
 
-def gradient_descent(func, *xs, gamma = 0.01, threshold = 0.0000000001):
+def gradient_descent(func, *xs, gamma = 0.0015, iter = 10e4):
     history = [(float(xs[0].data), float(xs[1].data))]
     grad_norms = []
-    y_pre = -100
     y = func(*xs)
-    while np.abs(y.data - y_pre) > threshold and len(history) < 10e4:
-        y_pre = y.data
+    while len(history) < iter:
         y.backward()
         grad_norm = math.sqrt(sum(float(x.grad)**2 for x in xs))
         grad_norms.append(grad_norm)
