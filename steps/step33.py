@@ -7,7 +7,7 @@ def f(x) -> Variable:
     return x ** 4 - 2 * x ** 2
 
 def main():
-    x = Variable(2)
+    x = Variable(3)
     y = f(x)
     y.backward(create_graph=True)
     print(x.grad)
