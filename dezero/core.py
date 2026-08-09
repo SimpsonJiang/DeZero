@@ -55,11 +55,19 @@ class Variable:
         if self.grad is None:
             self.grad = Variable(np.ones_like(self.data)) #1
 
-        funcs = [self.creator]
+        funcs = []
+        seen_set = set()
+        
+        def add_func(f):
+            if f not in seen_set:
+                funcs.append(f)
+                seen_set.add(f)
+                funcs.sort(key=lambda x: x.generation)
+        
+        add_func(self.creator)
+
         while funcs:
-            generations = np.array([f.generation for f in funcs])
-            index = np.where(generations == generations.max())[0][-1]
-            f = funcs.pop(index)
+            f = funcs.pop()
 
             gys = [y().grad for y in f.outputs]
 
@@ -77,8 +85,8 @@ class Variable:
                         x.grad = gx
                     else:
                         x.grad = x.grad + gx 
-                    if x.creator is not None and x.creator not in funcs:
-                        funcs.append(x.creator)
+                    if x.creator is not None:
+                        add_func(x.creator)
 
 class Function:
     def __call__(self, *inputs):

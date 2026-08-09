@@ -5,7 +5,14 @@ def get_dot_graph(y:Variable, verbose=False):
     dot_file = "digraph g{\n"
     dot_file += f"{id(y)} [label=\"{y.name}\", color=orange, style=filled]\n"
     dot_file += f"{id(y.creator)} -> {id(y)}\n"
-    funcs = [y.creator]
+    funcs = []
+    seen_set = set()
+    def add_func(f):
+            if f not in seen_set:
+                funcs.append(f)
+                seen_set.add(f)
+                funcs.sort(key=lambda x: x.generation)
+    add_func(y.creator)
     while funcs:
         f = funcs.pop()
         if type(f).__name__ != "Pow":
@@ -27,7 +34,7 @@ def get_dot_graph(y:Variable, verbose=False):
 
             if x.creator is not None and x.creator not in funcs:
                 dot_file += f"{id(x.creator)} -> {id(x)}\n"
-                funcs.append(x.creator)
+                add_func(x.creator)
     dot_file += "}\n"
     return dot_file
 
