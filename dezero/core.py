@@ -131,17 +131,29 @@ class Function:
 
 class Add(Function):
     def forward(self, x1, x2):
+        self.x1_shape = x1.shape
+        self.x2_shape = x2.shape
         y = x1 + x2
         return y
     def backward(self, gy):
-        return gy, gy
+        gx1, gx2 = gy, gy
+        if self.x1_shape != self.x2_shape:
+            return dezero.functions.sum_to(gx1, self.x1_shape), \
+                   dezero.functions.sum_to(gx2, self.x2_shape)
+        return gx1, gx2
 
 class Mul(Function):
     def forward(self, x1, x2):
+        self.x1_shape = x1.shape
+        self.x2_shape = x2.shape
         y = x1 * x2
         return y
     def backward(self, gy):
-        return gy * self.inputs[1], gy * self.inputs[0]
+        gx1, gx2 = gy * self.inputs[1], gy * self.inputs[0]
+        if self.x1_shape != self.x2_shape:
+            return dezero.functions.sum_to(gx1, self.x1_shape), \
+                   dezero.functions.sum_to(gx2, self.x2_shape)
+        return gx1, gx2
 
 class Neg(Function):
     def forward(self, x1):
@@ -151,26 +163,42 @@ class Neg(Function):
 
 class Sub(Function):
     def forward(self, x1, x2):
+        self.x1_shape = x1.shape
+        self.x2_shape = x2.shape
         return x1 - x2
     def backward(self, gy):
-        return gy, -gy
+        gx1, gx2 = gy, -gy
+        if self.x1_shape != self.x2_shape:
+            return dezero.functions.sum_to(gx1, self.x1_shape), \
+                   dezero.functions.sum_to(gx2, self.x2_shape)
+        return gx1, gx2
 
 class Div(Function):
     def forward(self, x1, x2):
+        self.x1_shape = x1.shape
+        self.x2_shape = x2.shape
         return x1 / x2
     def backward(self, gy):
-        x0 = self.inputs[0]
-        x1 = self.inputs[1]
-        return 1 / x1 * gy, -x0 / (x1 ** 2) * gy
+        x1 = self.inputs[0]
+        x2 = self.inputs[1]
+        gx1, gx2 =  1 / x2 * gy, -x1 / (x2 ** 2) * gy
+        if self.x1_shape != self.x2_shape:
+            return dezero.functions.sum_to(gx1, self.x1_shape), \
+                   dezero.functions.sum_to(gx2, self.x2_shape)
+        return gx1, gx2
 
 class Pow(Function):
     def __init__(self, c):
         self.c = c
     def forward(self, x1):
+        self.x1_shape = x1.shape
         return x1 ** self.c
     def backward(self, gy):
         x0 = self.inputs[0]
-        return self.c * (x0 ** (self.c - 1)) * gy
+        gx = self.c * (x0 ** (self.c - 1)) * gy
+        if self.x1_shape != self.c.shape:
+            return dezero.functions.sum_to(gx, self.x1_shape)
+        return gx
 
 
 def as_array(x):

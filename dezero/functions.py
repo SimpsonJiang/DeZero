@@ -101,7 +101,11 @@ def sum(x, axis = None, keepdims = False):
     return Sum(axis, keepdims)(x)
 
 def broadcast_to(x, shape):
+    if x.shape ==  shape:
+        return x
     return Broadcast_to(shape)(x)
 
 def sum_to(x, shape):
+    if x.shape ==  shape:
+        return x
     return Sum_to(shape)(x)
