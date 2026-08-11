@@ -59,7 +59,28 @@ class Sum(Function):
     
     def backward(self, gy):
         gy = utils.reshape_sum_backward(gy, self.inputs[0].shape, self.axis, self.keepdims)
-        return Variable(np.ones_like(self.inputs[0].data)) * gy
+        return broadcast_to(gy, self.inputs[0].shape)
+
+class Broadcast_to(Function):
+    def __init__(self, to_shape):
+        self.to_shape = to_shape
+    
+    def forward(self, x):
+        return np.broadcast_to(x, self.to_shape)
+
+    def backward(self, gy):
+        return sum_to(gy, self.inputs[0].shape)
+
+class Sum_to(Function):
+    def __init__(self, to_shape):
+        self.to_shape = to_shape
+    
+    def forward(self, x):
+        return utils.sum_to(x, self.to_shape)
+
+    def backward(self, gy):
+        return broadcast_to(gy, self.inputs[0].shape)
+
 
 def sin(x):
     return Sin()(x)
@@ -78,3 +99,9 @@ def transpose(x, axes = None):
 
 def sum(x, axis = None, keepdims = False):
     return Sum(axis, keepdims)(x)
+
+def broadcast_to(x, shape):
+    return Broadcast_to(shape)(x)
+
+def sum_to(x, shape):
+    return Sum_to(shape)(x)

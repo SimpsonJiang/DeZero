@@ -7,7 +7,7 @@ import numpy as np
 def main():
     x1 = Variable(np.array([[1, 2, 3], [4, 5, 6]]))
     x2 = Variable(np.array([7, 8, 9]))
-    y = (x1 * x2).sum()
+    y = x1 * F.broadcast_to(x2, (2, 3)) 
     y.backward()
 
     print(y)
