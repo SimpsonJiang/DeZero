@@ -58,7 +58,7 @@ class Sum(Function):
         return x.sum(axis = self.axis, keepdims = self.keepdims)
     
     def backward(self, gy):
-        gy = utils.reshape_sum_backward(gy, self.axis, self.keepdims)
+        gy = utils.reshape_sum_backward(gy, self.inputs[0].shape, self.axis, self.keepdims)
         return Variable(np.ones_like(self.inputs[0].data)) * gy
 
 def sin(x):

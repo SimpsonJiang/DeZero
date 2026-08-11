@@ -5,13 +5,14 @@ import dezero.functions as F
 import numpy as np
 
 def main():
-    x = Variable(np.array([[1, 2, 3], [4, 5, 6]]))
-    y = x.sum() ** 2 + 1
+    x1 = Variable(np.array([[1, 2, 3], [4, 5, 6]]))
+    x2 = Variable(np.array([7, 8, 9]))
+    y = (x1 * x2).sum()
     y.backward()
 
-    print(x, x.shape)
     print(y)
-    print(x.grad)
+    print(x1.grad)
+    print(x2.grad)
 
 if __name__ == "__main__":
     main()
