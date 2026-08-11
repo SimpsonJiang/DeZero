@@ -1,6 +1,7 @@
 from dezero import *
 import numpy as np
 import os, subprocess
+
 def get_dot_graph(y:Variable, verbose=False):
     dot_file = "digraph g{\n"
     dot_file += f"{id(y)} [label=\"{y.name}\", color=orange, style=filled]\n"
@@ -51,3 +52,12 @@ def plot_dot_graph(output, to_file:str, verbose=False):
     extension = os.path.splitext(to_file)[1].replace(".", "")
     cmd = f'dot {graph_path} -T {extension} -o {to_file}'
     subprocess.run(cmd, shell=True)
+
+def reshape_sum_backward(gy, axis, keepdims):
+    if keepdims:
+        return gy
+    else:
+        gy_reshape = list(gy.shape)
+        gy_reshape.insert(axis, 1)
+        gy = gy.reshape(gy_reshape)
+        return gy

@@ -5,12 +5,12 @@ import dezero.functions as F
 import numpy as np
 
 def main():
-    x = Variable(np.arange(2*3*4).reshape(2, 3, 4))
-    y = x.transpose((0, 2, 1)).reshape(8, 1, 3)
+    x = Variable(np.array([[1, 2, 3], [4, 5, 6]]))
+    y = x.sum(axis=1) ** 2 + 1
     y.backward()
 
     print(x, x.shape)
-    print(y, y.shape)
+    print(y)
     print(x.grad)
 
 if __name__ == "__main__":

@@ -63,10 +63,13 @@ class Variable:
     
     def transpose(self, axes = None):
         return dezero.functions.transpose(self, axes)
+    
+    def sum(self, axis = None, keepdims = False):
+        return dezero.functions.sum(self, axis, keepdims)
 
     def backward(self, retain_grad = False, create_graph = False):
         if self.grad is None:
-            self.grad = Variable(np.ones_like(self.data)) #1
+            self.grad = Variable(np.ones_like(self.data))
 
         funcs = []
         seen_set = set()
