@@ -81,6 +81,22 @@ class Sum_to(Function):
     def backward(self, gy):
         return broadcast_to(gy, self.inputs[0].shape)
 
+class MatMul(Function):
+    def forward(self, x1, x2):
+        self.x1 = x1
+        self.x2 = x2
+        return np.matmul(x1, x2)
+    
+    def backward(self, gy):
+        x1_T_shape = list(range(len(self.x1.shape) - 2)) + [len(self.x1.shape) - 1, len(self.x1.shape) - 2]
+        x2_T_shape = list(range(len(self.x2.shape) - 2)) + [len(self.x2.shape) - 1, len(self.x2.shape) - 2]
+        x1_T = self.x1.transpose(x1_T_shape)
+        x2_T = self.x2.transpose(x2_T_shape)
+        gx1, gx2 =  matmul(gy, x2_T), matmul(x1_T, gy)
+        if self.x1.shape != self.x2.shape:
+            return sum_to(gx1, self.x1.shape), \
+                   sum_to(gx2, self.x2.shape)
+        return gx1, gx2
 
 def sin(x):
     return Sin()(x)
@@ -109,3 +125,6 @@ def sum_to(x, shape):
     if x.shape ==  shape:
         return x
     return Sum_to(shape)(x)
+
+def matmul(x1, x2):
+    return MatMul()(x1, x2)

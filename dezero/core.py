@@ -66,6 +66,9 @@ class Variable:
     
     def sum(self, axis = None, keepdims = False):
         return dezero.functions.sum(self, axis, keepdims)
+    
+    def matmul(self, x):
+        return dezero.functions.matmul(self, x)
 
     def backward(self, retain_grad = False, create_graph = False):
         if self.grad is None:
