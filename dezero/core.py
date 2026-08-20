@@ -199,8 +199,6 @@ class Pow(Function):
     def backward(self, gy):
         x0 = self.inputs[0]
         gx = self.c * (x0 ** (self.c - 1)) * gy
-        if self.x1_shape != self.c.shape:
-            return dezero.functions.sum_to(gx, self.x1_shape)
         return gx
 
 
