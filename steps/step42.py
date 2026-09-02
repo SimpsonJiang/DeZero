@@ -37,14 +37,15 @@ def main():
         data_x, data_y = load_dataset(k=k_real, b=b_real, dim=dim, batch_size=batch_size, min_x=min_x, max_x=max_x, seed = i)
         # print(data_x.shape, data_y.shape, W.shape, b.shape)
         y = F.matmul(data_x, W) + b
-        loss = ((data_y - y) ** 2).sum() / batch_size
-        print(f"{i+1}th iter, loss={loss}")
+        loss = F.MSE_loss(data_y, y)
         history[0, i] = loss.data
         if loss.data < best_loss:
             best_loss = loss.data
             best_W = W
             best_b = b
         loss.backward()
+        # print(f"y grad={y.grad}, W grad={W.grad.data}, b grad={b.grad.data} ")
+        print(f"{i+1}th iter, loss={loss}")
         W.data = W.data - gamma * W.grad.data
         b.data = b.data - gamma * b.grad.data
         history[1, i] = W.data[0][0]
@@ -65,6 +66,14 @@ def main():
     plt.plot(range(len(history[2])), history[2], 'b-', label="b")
     plt.legend()
     plt.show()
+
+def test():
+    y = Variable(np.array([[1, 6], [5, 7]]))
+    y_pred = np.array([[1, 7], [4, 7]])
+    loss = F.MSE_loss(y_pred, y)
+    loss.backward()
+    print(loss)
+    print(y.grad)
 
 if __name__ == "__main__":
     main()

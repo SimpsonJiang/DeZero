@@ -53,7 +53,7 @@ def plot_dot_graph(output, to_file:str, verbose=False):
     cmd = f'dot {graph_path} -T {extension} -o {to_file}'
     subprocess.run(cmd, shell=True)
 
-def reshape_sum_backward(gy, x_shape, axis, keepdims):
+def reshape_sum_backward(gy, x_shape, axis, keepdims): # 返回和x_shape一样形状的gy, 不改变gy的值
     if keepdims:
         return gy
     elif axis is None:

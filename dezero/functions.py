@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from dezero.core import Variable, Function
 import dezero.utils as utils
@@ -81,6 +82,24 @@ class Sum_to(Function):
     def backward(self, gy):
         return broadcast_to(gy, self.inputs[0].shape)
 
+class Mean(Function):
+    def __init__(self, axis, keepdims):
+        self.axis = axis
+        self.keepdims = keepdims
+
+    def forward(self, x):
+        self.x_shape = x.shape
+        self.x_size = x.size
+        return x.mean(axis = self.axis, keepdims = self.keepdims)
+
+    def backward(self, gy):
+        if self.axis is not None:
+            gx = utils.reshape_sum_backward(gy, self.inputs[0].shape, self.axis, self.keepdims)  / self.x_shape[self.axis]
+        else:
+            gx = utils.reshape_sum_backward(gy, self.inputs[0].shape, self.axis, self.keepdims)  / self.x_size
+        return broadcast_to(gx, self.inputs[0].shape)
+
+
 class MatMul(Function):
     def forward(self, x1, x2):
         self.x1 = x1
@@ -96,6 +115,18 @@ class MatMul(Function):
         if self.x1.shape != self.x2.shape:
             return sum_to(gx1, self.x1.shape), \
                    sum_to(gx2, self.x2.shape)
+        return gx1, gx2
+
+class MeanSquareError(Function):
+    def forward(self, x1, x2):
+        assert x1.shape == x2.shape, f"MSE needs two arraies with same shape, got {x1.shape} and {x2.shape}."
+        self.x1 = x1
+        self.x2 = x2
+        return np.mean((x1 - x2) ** 2)
+
+    def backward(self, gy):
+        gx1 = gy / self.x1.size * 2 * (self.inputs[0] - self.inputs[1])
+        gx2 = gy / self.x1.size * 2 * (self.inputs[1] - self.inputs[0])
         return gx1, gx2
 
 def sin(x):
@@ -126,5 +157,11 @@ def sum_to(x, shape):
         return x
     return Sum_to(shape)(x)
 
+def mean(x, axis = None, keepdims = False):
+    return Mean(axis, keepdims)(x)
+
 def matmul(x1, x2):
     return MatMul()(x1, x2)
+
+def MSE_loss(x1, x2):
+    return MeanSquareError()(x1, x2)

@@ -67,6 +67,9 @@ class Variable:
     def sum(self, axis = None, keepdims = False):
         return dezero.functions.sum(self, axis, keepdims)
     
+    def mean(self, axis = None, keepdims = False):
+        return dezero.functions.mean(self, axis, keepdims)
+    
     def matmul(self, x):
         return dezero.functions.matmul(self, x)
 

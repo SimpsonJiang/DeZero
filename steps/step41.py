@@ -10,6 +10,7 @@ def main():
     y = F.matmul(x1, x2)
     y.backward()
 
+    print(y.grad)
     print(x1.grad)
     print(x2.grad)
 
