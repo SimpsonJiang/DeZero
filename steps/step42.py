@@ -36,13 +36,16 @@ def main():
     for i in range(100):
         data_x, data_y = load_dataset(k=k_real, b=b_real, dim=dim, batch_size=batch_size, min_x=min_x, max_x=max_x, seed = i)
         # print(data_x.shape, data_y.shape, W.shape, b.shape)
-        y = F.matmul(data_x, W) + b
+        y = F.linear(data_x, W, b)
         loss = F.MSE_loss(data_y, y)
         history[0, i] = loss.data
         if loss.data < best_loss:
             best_loss = loss.data
             best_W = W
             best_b = b
+        
+        W.cleargrad()
+        b.cleargrad()
         loss.backward()
         # print(f"y grad={y.grad}, W grad={W.grad.data}, b grad={b.grad.data} ")
         print(f"{i+1}th iter, loss={loss}")
@@ -50,13 +53,14 @@ def main():
         b.data = b.data - gamma * b.grad.data
         history[1, i] = W.data[0][0]
         history[2, i] = b.data[0][0]
-        W.cleargrad()
+
+
     
 
     print(best_loss, W.data, b.data)
     with no_grad():
         x = np.array([np.linspace(0, 10, batch_size)]).reshape(batch_size, dim, dim)
-        y = F.matmul(x, best_W) + best_b
+        y = F.linear(x, best_W, best_b)
     plt.plot(x[:,0,0], y.data[:,0,0], '.')
     plt.plot(x[:,0,0], k_real * x[:,0,0] + b_real, 'r-')
     plt.show()

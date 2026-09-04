@@ -99,23 +99,39 @@ class Mean(Function):
             gx = utils.reshape_sum_backward(gy, self.inputs[0].shape, self.axis, self.keepdims)  / self.x_size
         return broadcast_to(gx, self.inputs[0].shape)
 
-
 class MatMul(Function):
     def forward(self, x1, x2):
-        self.x1 = x1
-        self.x2 = x2
         return np.matmul(x1, x2)
     
     def backward(self, gy):
-        x1_T_shape = list(range(len(self.x1.shape) - 2)) + [len(self.x1.shape) - 1, len(self.x1.shape) - 2]
-        x2_T_shape = list(range(len(self.x2.shape) - 2)) + [len(self.x2.shape) - 1, len(self.x2.shape) - 2]
-        x1_T = self.x1.transpose(x1_T_shape)
-        x2_T = self.x2.transpose(x2_T_shape)
+        x1, x2 = self.inputs
+        x1_T_shape = list(range(len(x1.shape) - 2)) + [len(x1.shape) - 1, len(x1.shape) - 2]
+        x2_T_shape = list(range(len(x2.shape) - 2)) + [len(x2.shape) - 1, len(x2.shape) - 2]
+        x1_T = x1.transpose(x1_T_shape)
+        x2_T = x2.transpose(x2_T_shape)
         gx1, gx2 =  matmul(gy, x2_T), matmul(x1_T, gy)
-        if self.x1.shape != self.x2.shape:
-            return sum_to(gx1, self.x1.shape), \
-                   sum_to(gx2, self.x2.shape)
-        return gx1, gx2
+        return sum_to(gx1, x1.shape), sum_to(gx2, x2.shape)
+
+class Linear(Function):
+    def forward(self, x, W, b):
+        return np.matmul(x, W) + b
+    
+    def backward(self, gy):
+        x, W, b = self.inputs
+        x_T_shape = list(range(len(x.shape) - 2)) + [len(x.shape) - 1, len(x.shape) - 2]
+        x_T = x.transpose(x_T_shape)
+        W_T_shape = list(range(len(W.shape) - 2)) + [len(W.shape) - 1, len(W.shape) - 2]
+        W_T = W.transpose(W_T_shape)
+        gx = matmul(gy, W_T)
+        gW = matmul(x_T, gy)
+        return sum_to(gx, x.shape), sum_to(gW, W.shape), sum_to(gy, b.shape)
+
+class Sigmoid(Function):
+    def forward(self, x):
+        return 1.0 / (1.0 + np.exp(-x))
+    
+    def backward(self, gy):
+        return gy * self.outputs[0]() * (1 - self.outputs[0]())
 
 class MeanSquareError(Function):
     def forward(self, x1, x2):
@@ -162,6 +178,12 @@ def mean(x, axis = None, keepdims = False):
 
 def matmul(x1, x2):
     return MatMul()(x1, x2)
+
+def linear(x, W, b):
+    return Linear()(x, W, b)
+
+def sigmoid(x):
+    return Sigmoid()(x)
 
 def MSE_loss(x1, x2):
     return MeanSquareError()(x1, x2)
