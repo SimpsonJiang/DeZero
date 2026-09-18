@@ -110,6 +110,9 @@ class Variable:
                     if x.creator is not None:
                         add_func(x.creator)
 
+class Parameter(Variable):
+    pass
+
 class Function:
     def __call__(self, *inputs):
         inputs = [input if isinstance(input, Variable) else Variable(input) for input in inputs]
