@@ -1,12 +1,13 @@
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from dezero import Variable, no_grad, Model, MLP
+from dezero import Variable, no_grad
 import dezero.functions as F
 import dezero.layers as L
+import dezero.models as M
 import numpy as np
 import matplotlib.pyplot as plt
 
-class TwoLayerNet(Model):
+class TwoLayerNet(M.Model):
     def __init__(self, in_size, hidden_size, out_size):
         super().__init__()
         self.l1 = L.Linear(in_size, hidden_size)
@@ -23,7 +24,13 @@ def main():
     x = np.random.rand(100, 1)
     y = 2 * np.sin(2 * np.pi * x) + np.random.rand(100, 1)
 
-    model = MLP([1, 10, 1])
+    # model = M.MLP([1, 10, 1])
+    model = M.Sequential(
+        L.Linear(1, 10),
+        L.Sigmoid(),
+        L.Linear(10, 1)
+    )
+    print(model.__dict__.keys())
     model.plot(x)
 
     lr = 0.2

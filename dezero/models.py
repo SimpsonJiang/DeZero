@@ -19,8 +19,36 @@ class MLP(Model):
             setattr(self, 'l'+str(i), layer)
             self.layers.append(layer)
             last_size = size
+
+            if i < len(sizes) - 1:
+                act = L.Sigmoid()
+                self.layers.append(act)
+                setattr(self, 'act'+str(i), act)
         
     def forward(self, x):
-        for l in self.layers[:-1]:
-            x = self.act(l(x))
-        return self.layers[-1](x)
+        for l in self.layers:
+            x = l(x)
+        return x
+
+class Sequential(Model):
+    def __init__(self, *args:L.Layer):
+        super().__init__()
+
+        self.layers = []
+        self.layers_count = {}
+
+        for i, layer in enumerate(args):
+            layer_name = type(layer).__name__
+            if layer_name not in self.layers_count.keys():
+                self.layers_count[layer_name] = 1
+            else:
+                self.layers_count[layer_name] += 1
+
+            layer_reg_name = layer_name+str(self.layers_count[layer_name])
+            setattr(self, layer_reg_name, layer)
+            self.layers.append(layer)
+    
+    def forward(self, x):
+        for layer in self.layers:
+            x = layer(x)
+        return x

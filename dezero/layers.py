@@ -63,3 +63,7 @@ class Linear(Layer):
             self._init_W()
 
         return F.linear(x, self.W, self.b)
+
+class Sigmoid(Layer):
+    def forward(self, x):
+        return F.sigmoid(x)
