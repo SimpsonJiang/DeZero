@@ -4,7 +4,12 @@ import os, subprocess
 
 def get_dot_graph(y:Variable, verbose=False):
     dot_file = "digraph g{\n"
-    dot_file += f"{id(y)} [label=\"{y.name}\", color=orange, style=filled]\n"
+    if y.name is not None:
+        y.name = y.name + ":"
+    else:
+        y.name = ""
+    dot_file += f"{id(y)} [label=\"{y.name}\", color=orange, style=filled]\n" if not verbose \
+                    else f"{id(y)} [label=\"{y.name}{y.shape} {y.dtype}\", color=orange, style=filled]\n"
     dot_file += f"{id(y.creator)} -> {id(y)}\n"
     funcs = []
     seen_set = set()
