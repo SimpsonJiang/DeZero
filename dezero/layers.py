@@ -32,7 +32,7 @@ class Layer:
             param.cleargrad()
 
 class Linear(Layer):
-    def __init__(self, out_size, nobias=False, dtype=np.float32, in_size=None):
+    def __init__(self, in_size, out_size, nobias=False, dtype=np.float32):
         super().__init__()
 
         self.in_size = in_size
