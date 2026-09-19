@@ -8,7 +8,7 @@ class Model(L.Layer):
         return utils.plot_dot_graph(y, verbose=True, to_file=to_file)
 
 class MLP(Model):
-    def __init__(self, sizes, activation=F.sigmoid):
+    def __init__(self, sizes:list, activation=F.sigmoid):
         super().__init__()
         self.act = activation
         self.layers = []
