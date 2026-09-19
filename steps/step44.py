@@ -11,8 +11,8 @@ def main():
     x = np.random.rand(100, 1)
     y = np.sin(2 * np.pi * x) + np.random.rand(100, 1)
 
-    l1 = L.Linear(10)
-    l2 = L.Linear(1)
+    l1 = L.Linear(1, 10)
+    l2 = L.Linear(10, 1)
 
     def predict(x):
         x = F.sigmoid(l1(x))

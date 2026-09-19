@@ -23,15 +23,15 @@ def get_dot_graph(y:Variable, verbose=False):
         dot_file += f"{id(f)} [label=\"{f_name}\", color=lightblue, style=filled, shape=box]\n"    
         
         for x in f.inputs:
-            if x.name is None:
-                if x.creator is None:
-                    x.name = x.data
-                else:
-                    x.name = ""
+
+            if x.name is not None:
+                x.name = x.name + ":"
+            else:
+                x.name = ""
 
             dot_file += f"{id(x)} -> {id(f)}\n"
             dot_file += f"{id(x)} [label=\"{x.name}\", color=orange, style=filled]\n" if not verbose \
-                        else f"{id(x)} [label=\"{x.name}:{x.shape} {x.dtype}\", color=orange, style=filled]\n"
+                        else f"{id(x)} [label=\"{x.name}{x.shape} {x.dtype}\", color=orange, style=filled]\n"
 
             if x.creator is not None and x.creator not in funcs:
                 dot_file += f"{id(x.creator)} -> {id(x)}\n"
