@@ -37,7 +37,7 @@ class Sequential(Model):
         self.layers = []
         self.layers_count = {}
 
-        for i, layer in enumerate(args):
+        for layer in args:
             layer_name = type(layer).__name__
             if layer_name not in self.layers_count.keys():
                 self.layers_count[layer_name] = 1
@@ -48,7 +48,26 @@ class Sequential(Model):
             setattr(self, layer_reg_name, layer)
             self.layers.append(layer)
     
+    def __repr__(self):
+        str = "Sequential(\n"
+        for i, layer in enumerate(self.layers):
+            str += f"({i}):"+layer.__repr__()+"\n"
+        str += ")"
+        return str
+
+
     def forward(self, x):
         for layer in self.layers:
             x = layer(x)
         return x
+    
+    def append(self, layer:L.Layer):
+        layer_name = type(layer).__name__
+        if layer_name not in self.layers_count.keys():
+            self.layers_count[layer_name] = 1
+        else:
+            self.layers_count[layer_name] += 1
+        
+        layer_reg_name = layer_name+str(self.layers_count[layer_name])
+        setattr(self, layer_reg_name, layer)
+        self.layers.append(layer)

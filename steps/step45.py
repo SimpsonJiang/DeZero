@@ -24,13 +24,12 @@ def main():
     x = np.random.rand(100, 1)
     y = 2 * np.sin(2 * np.pi * x) + np.random.rand(100, 1)
 
-    # model = M.MLP([1, 10, 1])
     model = M.Sequential(
         L.Linear(1, 10),
         L.Sigmoid(),
         L.Linear(10, 1)
     )
-    print(model.__dict__.keys())
+    print(model)
     model.plot(x)
 
     lr = 0.2

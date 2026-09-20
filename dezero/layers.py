@@ -36,23 +36,26 @@ class Layer:
             param.cleargrad()
 
 class Linear(Layer):
-    def __init__(self, in_size, out_size, nobias=False, dtype=np.float32):
+    def __init__(self, in_size, out_size, bias=True, dtype=np.float32):
         super().__init__()
 
         self.in_size = in_size
         self.out_size = out_size
+        self.bias = bias
         self.dtype = dtype
 
         self.W = Parameter(None, name="W")
         if self.in_size is not None:
             self._init_W()
         
-        if nobias:
-            self.b = None
-        else:
+        if bias:
             self.b = Parameter(np.zeros(self.out_size, dtype=self.dtype), name = "b")
+        else:
+            self.b = None
 
-    
+    def __repr__(self):
+        return f"Linear(in_size={self.in_size}, out_size={self.out_size}, bias={self.bias})"
+
     def _init_W(self):
         data_W = np.random.randn(self.in_size, self.out_size).astype(self.dtype) * np.sqrt(1 / self.in_size)
         self.W.data = data_W
@@ -65,5 +68,8 @@ class Linear(Layer):
         return F.linear(x, self.W, self.b)
 
 class Sigmoid(Layer):
+    def __repr__(self):
+        return "Sigmoid()"
+    
     def forward(self, x):
         return F.sigmoid(x)
