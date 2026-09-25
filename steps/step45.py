@@ -33,18 +33,22 @@ def main():
     model.plot(x)
 
     lr = 0.2
-    iters = 10000
-    for i in range(iters):
-        y_pred = model(x)
-        loss = F.MSE_loss(y_pred, y)
+    epochs = 10000
+    batch_size = 100
+    data_size = len(x)
+    for epoch in range(epochs):
+        indices = np.random.permutation(data_size)
+        for start in range(0, data_size, batch_size):
+            batch_x = x[indices[start:start+batch_size]]
+            batch_y = y[indices[start:start+batch_size]]
+            y_pred = model(batch_x)
+            loss = F.MSE_loss(y_pred, batch_y)
+            loss.backward()
 
-        model.cleargrads()
-        loss.backward()
-
-        for p in model.params():
-            p.data -= lr * p.grad.data
-
-        if i % 100 == 0:
+            for p in model.params():
+                p.data -= lr * p.grad.data
+            model.cleargrads()
+        if epoch % 100 == 0:
             print(f"loss={loss}")
     
     plt.plot(x, y, '.')
