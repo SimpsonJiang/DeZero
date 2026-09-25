@@ -49,7 +49,32 @@ class Transpose(Function):
             return transpose(gy, inv_axes)
         else:
             return transpose(gy)
-        
+
+class GetItem(Function):
+    def __init__(self, slices):
+        self.slices = slices
+    
+    def forward(self, x):
+        self.x_shape = x.shape
+        return x[self.slices]
+    
+    def backward(self, gy):
+        f = GetItemGrad(self.slices, self.x_shape)
+        return f(gy)
+
+class GetItemGrad(Function):
+    def __init__(self, slices, in_shape):
+        self.slices = slices
+        self.in_shape = in_shape
+
+    def forward(self, x):
+        y = np.zeros(self.in_shape)
+        np.add.at(y, self.slices, x)
+        return y
+    
+    def backward(self, gy):
+        return get_item(gy, self.slices)
+
 class Sum(Function):
     def __init__(self, axis, keepdims):
         self.axis = axis
@@ -159,6 +184,9 @@ def reshape(x, shape):
 
 def transpose(x, axes = None):
     return Transpose(axes)(x)
+
+def get_item(x, slice):
+    return GetItem(slice)(x)
 
 def sum(x, axis = None, keepdims = False):
     return Sum(axis, keepdims)(x)
